@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <title>Simple Groups Example</title>
@@ -24,7 +25,10 @@
         }
     </style>
 </head>
+
 <body>
+    
+    <script src="../data.js"></script>
     <a href="../index.html">cola.js home</a>
     <h1>Simple Groups Example</h1>
     <script src="../d3v4.js"></script>
@@ -45,8 +49,8 @@
     <script src="../src/d3adaptor.js"></script>-->
     <script>
         hljs.initHighlightingOnLoad();
-        var width = 960,
-            height = 500;
+        var width = 2000,
+            height = 1000;
 
         var color = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -57,7 +61,7 @@
             .attr("width", width)
             .attr("height", height);
 
-        d3.json("miserables.json", function (error, graph) {
+        d3.json("test.json", function (error, graph) {
             var groupMap = {};
             graph.nodes.forEach(function (v, i) {
                 var g = v.group;
@@ -85,20 +89,20 @@
                 .data(groups)
                 .enter().append('rect')
                 .classed('group', true)
-                .attr('rx',5)
-                .attr('ry',5)
+                .attr('rx', 5)
+                .attr('ry', 5)
                 .style("fill", function (d) { return color(d.id); })
                 .call(cola.drag);
 
             var link = svg.selectAll(".link")
                 .data(graph.links)
-              .enter().append("line")
+                .enter().append("line")
                 .attr("class", "link")
                 .style("stroke-width", function (d) { return Math.sqrt(d.value); });
 
             var node = svg.selectAll(".node")
                 .data(graph.nodes)
-              .enter().append("circle")
+                .enter().append("circle")
                 .attr("class", "node")
                 .attr("r", 5)
                 .style("fill", function (d) { return color(d.group); })
@@ -120,11 +124,12 @@
                     .attr('x', function (d) { return d.bounds.x })
                     .attr('y', function (d) { return d.bounds.y })
                     .attr('width', function (d) { return d.bounds.width() })
-                    .attr('height', function(d) { return d.bounds.height() });
+                    .attr('height', function (d) { return d.bounds.height() });
             });
         });
 
     </script>
 
 </body>
+
 </html>
