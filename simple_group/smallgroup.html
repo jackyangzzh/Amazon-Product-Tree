@@ -104,7 +104,7 @@
                 .data(graph.nodes)
                 .enter().append("circle")
                 .attr("class", "node")
-                .attr("r", 5)
+                .attr("r", function(d) {return Math.sqrt(d.size) + 3;})
                 .style("fill", function (d) { return color(d.group); })
                 .call(cola.drag);
 
@@ -120,11 +120,11 @@
                 node.attr("cx", function (d) { return d.x; })
                     .attr("cy", function (d) { return d.y; });
 
-                group
-                    .attr('x', function (d) { return d.bounds.x })
-                    .attr('y', function (d) { return d.bounds.y })
-                    .attr('width', function (d) { return d.bounds.width() })
-                    .attr('height', function (d) { return d.bounds.height() });
+                // group
+                //     .attr('x', function (d) { return d.bounds.x })
+                //     .attr('y', function (d) { return d.bounds.y })
+                //     .attr('width', function (d) { return d.bounds.width() })
+                //     .attr('height', function (d) { return d.bounds.height() });
             });
         });
 
