@@ -1,54 +1,6 @@
-<!DOCTYPE html>
 
-<html lang="en">
 
-<head>
-    <meta charset="utf-8" />
-    <title>Simple Groups Example</title>
-    <style>
-        @import url(../style.css);
-
-        .node {
-            stroke: #fff;
-            stroke-width: 1.5px;
-        }
-
-        .link {
-            stroke: #999;
-            stroke-opacity: .8;
-        }
-
-        .group {
-            stroke: #fff;
-            stroke-width: 1.5px;
-            opacity: 0.2;
-        }
-    </style>
-</head>
-
-<body>
-    
-    <script src="../data.js"></script>
-    <a href="../index.html">cola.js home</a>
-    <h1>Simple Groups Example</h1>
-    <script src="../d3v4.js"></script>
-    <script src="../cola.min.js"></script>
-    <link rel="stylesheet" href="../hljs/styles/github.css">
-    <script src="../hljs/highlight.pack.js"></script>
-    <!--<script src="../src/rbtree.js"></script>
-    <script src="../src/pqueue.js"></script>
-    <script src="../src/vpsc.js"></script>
-    <script src="../src/rectangle.js"></script>
-    <script src="../src/descent.js"></script>
-    <script src="../src/pqueue.js"></script>
-    <script src="../src/shortestpaths.js"></script>
-    <script src="../src/linklengths.js"></script>
-    <script src="../src/handledisconnected.js"></script>
-    <script src="../src/layout.js"></script>
-    <script src="../src/rbtree.js"></script>
-    <script src="../src/d3adaptor.js"></script>-->
-    <script>
-        hljs.initHighlightingOnLoad();
+hljs.initHighlightingOnLoad();
         var width = 2000,
             height = 1000;
 
@@ -127,9 +79,3 @@
                     .attr('height', function (d) { return d.bounds.height() });
             });
         });
-
-    </script>
-
-</body>
-
-</html>
