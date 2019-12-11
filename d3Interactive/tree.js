@@ -121,7 +121,7 @@ function update(source) {
   var nodeEnter = node.enter().append("g")
     .attr("class", "node")
     .attr("transform", function (d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-    .on("click", altClick);
+    .on("click", click);
 
   function altClick(d) {
     nodes.forEach(e => {
