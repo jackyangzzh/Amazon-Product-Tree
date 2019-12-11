@@ -9,25 +9,16 @@
 var dataTable = { nodes: [] };
 
 let rootNode = {};
+let treeData;
 
-d3.csv('../data/PetSupplies.csv', function (source) {
+dataProcess().then(generateTree(treeData));
 
-  // for (var i = 0; i < data.length; i++) {
-  //     table.nodes.push({ name: data[i].name, group: parseInt(data[i].parent), size: 1});
-  //     table.links.push({ source: parseInt(data[i].id), target: parseInt(data[i].parent), value: 1 });
-  // }
-
-
-  // tableData = JSON.stringify(table);
-
-  // let root = {};
-
-
+async function dataProcess() {d3.csv('../data/PetSupplies.csv', function (source) {
 
   function convertChildren(node, id) {
     node.id = id;
     node.name = source[id].name;
-    node.productCount = source[id].productCount;
+    node.productCount = parseInt(source[id].productCount) ;
     node.parent = node.id == 0 ? "null" : source[id].parent;
     if (source[id].children == "[]") {
       node.children = [];
@@ -45,11 +36,10 @@ d3.csv('../data/PetSupplies.csv', function (source) {
   }
 
   convertChildren(rootNode, 0);
-  // console.log(rootNode);
 });
 
 
-var treeData = [
+treeData = [
   {
     "name": "Top Level",
     "parent": "null",
@@ -75,16 +65,16 @@ var treeData = [
     ]
   }
 ];
-console.log(treeData);
-treeData = [];
-console.log(rootNode.children);
-treeData.push(rootNode);
-console.log(treeData);
+ treeData = [];
+ treeData.push(rootNode);
+}
 
+
+function generateTree(treeData) {
 // ************** Generate the tree diagram	 *****************
-var margin = { top: 20, right: 120, bottom: 20, left: 20 },
-  width = 1200 - margin.right - margin.left,
-  height = 2000 - margin.top - margin.bottom;
+var margin = { top: 20, right: 120, bottom: 20, left: 120 },
+  width = 960 - margin.right - margin.left,
+  height = 500 - margin.top - margin.bottom;
 
 var i = 0,
   duration = 750,
@@ -103,8 +93,10 @@ var svg = d3.select("body").append("svg")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 root = treeData[0];
+console.log(root);
 root.x0 = height / 2;
 root.y0 = 0;
+
 
 update(root);
 
@@ -112,12 +104,13 @@ d3.select(self.frameElement).style("height", "500px");
 
 function update(source) {
 
+
   // Compute the new tree layout.
   var nodes = tree.nodes(root).reverse(),
     links = tree.links(nodes);
 
   // Normalize for fixed-depth.
-  nodes.forEach(function (d) { d.y = d.depth * 200; });
+  nodes.forEach(function (d) { d.y = d.depth * 180; });
 
   // Update the nodes…
   var node = svg.selectAll("g.node")
@@ -206,6 +199,7 @@ function click(d) {
     d.children = d._children;
     d._children = null;
   }
+  console.log(root);
   update(d);
-}
+}}
 
