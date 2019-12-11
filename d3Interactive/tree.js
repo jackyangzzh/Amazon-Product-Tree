@@ -8,21 +8,9 @@
 
 var dataTable = { nodes: [] };
 
+// Load data
 let rootNode = {};
-
 d3.csv('../data/PetSupplies.csv', function (source) {
-
-  // for (var i = 0; i < data.length; i++) {
-  //     table.nodes.push({ name: data[i].name, group: parseInt(data[i].parent), size: 1});
-  //     table.links.push({ source: parseInt(data[i].id), target: parseInt(data[i].parent), value: 1 });
-  // }
-
-
-  // tableData = JSON.stringify(table);
-
-  // let root = {};
-
-
 
   function convertChildren(node, id) {
     node.id = id;
@@ -45,7 +33,6 @@ d3.csv('../data/PetSupplies.csv', function (source) {
   }
 
   convertChildren(rootNode, 0);
-  // console.log(rootNode);
 });
 
 
@@ -76,15 +63,15 @@ var treeData = [
   }
 ];
 console.log(treeData);
-treeData = [];
-console.log(rootNode.children);
-treeData.push(rootNode);
-console.log(treeData);
+// treeData = [];
+// console.log(rootNode.children);
+// treeData.push(rootNode);
+// console.log(treeData);
 
 // ************** Generate the tree diagram	 *****************
-var margin = { top: 20, right: 120, bottom: 20, left: 20 },
+var margin = { top: 20, right: 120, bottom: 20, left: 120 },
   width = 1200 - margin.right - margin.left,
-  height = 2000 - margin.top - margin.bottom;
+  height = 600 - margin.top - margin.bottom;
 
 var i = 0,
   duration = 750,
@@ -103,6 +90,7 @@ var svg = d3.select("body").append("svg")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 root = treeData[0];
+console.log(root)
 root.x0 = height / 2;
 root.y0 = 0;
 
@@ -127,7 +115,19 @@ function update(source) {
   var nodeEnter = node.enter().append("g")
     .attr("class", "node")
     .attr("transform", function (d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-    .on("click", click);
+    .on("click", altClick);
+
+  function altClick(d) {
+    nodes.forEach(e => {
+      e.children = e._children;
+      e._children = null;
+    });
+    d._children = d.children;
+    d.children = null;
+
+    update(d);
+    console.log(root)
+  }
 
   nodeEnter.append("circle")
     .attr("r", 1e-6)
@@ -207,5 +207,6 @@ function click(d) {
     d._children = null;
   }
   update(d);
+  console.log(root)
 }
 
