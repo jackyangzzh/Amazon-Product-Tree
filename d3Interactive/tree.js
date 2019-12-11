@@ -10,14 +10,13 @@ var dataTable = { nodes: [] };
 
 // Load data
 let rootNode = {};
+let rootNodeName;
 let treeData;
 
-dataProcess().then(generateTree(treeData));
-
-async function dataProcess() {d3.csv('../data/PetSupplies.csv', function (source) {
+d3.csv('../data/PetSupplies.csv', function (source) {
 
   convertChildren(rootNode, 0);
-
+  update(rootNode);
   function convertChildren(node, id) {
     node.id = id;
     node.name = source[id].name;
@@ -31,7 +30,6 @@ async function dataProcess() {d3.csv('../data/PetSupplies.csv', function (source
       node.children = [];
       arr.forEach(childId => {
         let child = {};
-
         node.children.push(convertChildren(child, childId));
       });
       return node;
@@ -40,7 +38,6 @@ async function dataProcess() {d3.csv('../data/PetSupplies.csv', function (source
 
 
 });
-
 
 treeData = [
   {
@@ -69,17 +66,20 @@ treeData = [
   }
 ];
 
-// rootNode.children = rootNode._children;
-// rootNode._children = null;
-// rootNode.name = rootNode.name;
 
+
+console.log(treeData[0]);
 
  treeData = [];
+
+
+ console.log(rootNodeName)
  treeData.push(rootNode);
-}
+
+  console.log(treeData[0]);
 
 
-function generateTree(treeData) {
+
 // ************** Generate the tree diagram	 *****************
 var margin = { top: 20, right: 120, bottom: 20, left: 120 },
   width = 1200 - margin.right - margin.left,
@@ -104,18 +104,17 @@ var svg = d3.select("body").append("svg")
 root = treeData[0];
 // root._children = root.children;
 // root.children = null;
-console.log(root);
 root.x0 = height / 2;
 root.y0 = 0;
-
+// root.name = "data";
 update(root);
+
 
 
 d3.select(self.frameElement).style("height", "500px");
 
 
 function update(source) {
-
 
   // Compute the new tree layout.
   var nodes = tree.nodes(root).reverse();
@@ -205,18 +204,14 @@ function update(source) {
 
 // Toggle children on click.
 function click(d) {
-  console.log(d); 
   if (d.children) {
     d._children = d.children;
     d.children = null;
-    console.log("if called");
   } else {
     d.children = d._children;
     d._children = null;
-    console.log("else called");
   }
-  // console.log(root)
   update(d);
 
 }
-}
+
