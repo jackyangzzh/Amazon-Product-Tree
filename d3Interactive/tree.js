@@ -16,6 +16,8 @@ dataProcess().then(generateTree(treeData));
 
 async function dataProcess() {d3.csv('../data/PetSupplies.csv', function (source) {
 
+  convertChildren(rootNode, 0);
+
   function convertChildren(node, id) {
     node.id = id;
     node.name = source[id].name;
@@ -36,7 +38,7 @@ async function dataProcess() {d3.csv('../data/PetSupplies.csv', function (source
     }
   }
 
-  convertChildren(rootNode, 0);
+
 });
 
 
@@ -66,6 +68,12 @@ treeData = [
     ]
   }
 ];
+
+// rootNode.children = rootNode._children;
+// rootNode._children = null;
+// rootNode.name = rootNode.name;
+
+
  treeData = [];
  treeData.push(rootNode);
 }
@@ -94,20 +102,23 @@ var svg = d3.select("body").append("svg")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 root = treeData[0];
+// root._children = root.children;
+// root.children = null;
 console.log(root);
 root.x0 = height / 2;
 root.y0 = 0;
 
-
 update(root);
 
+
 d3.select(self.frameElement).style("height", "500px");
+
 
 function update(source) {
 
 
   // Compute the new tree layout.
-  var nodes = tree.nodes(root).reverse(),
+  var nodes = tree.nodes(root).reverse();
     links = tree.links(nodes);
 
   // Normalize for fixed-depth.
@@ -115,7 +126,7 @@ function update(source) {
 
   // Update the nodes…
   var node = svg.selectAll("g.node")
-    .data(nodes, function (d) { return d.id || (d.id = ++i); });
+    .data(nodes, function (d) { return d.id || (d.id = ++i); })
 
   // Enter any new nodes at the parent's previous position.
   var nodeEnter = node.enter().append("g")
@@ -123,17 +134,6 @@ function update(source) {
     .attr("transform", function (d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
     .on("click", click);
 
-  function altClick(d) {
-    nodes.forEach(e => {
-      e.children = e._children;
-      e._children = null;
-    });
-    d._children = d.children;
-    d.children = null;
-
-    update(d);
-    console.log(root)
-  }
 
   nodeEnter.append("circle")
     .attr("r", 1e-6)
@@ -205,15 +205,18 @@ function update(source) {
 
 // Toggle children on click.
 function click(d) {
+  console.log(d); 
   if (d.children) {
     d._children = d.children;
     d.children = null;
+    console.log("if called");
   } else {
     d.children = d._children;
     d._children = null;
+    console.log("else called");
   }
-  console.log(root);
+  // console.log(root)
   update(d);
-  console.log(root)
+
 }
 }
