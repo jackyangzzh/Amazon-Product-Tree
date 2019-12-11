@@ -135,12 +135,41 @@ function generateTree(treeData) {
     let node = svg.selectAll("g.node")
       .data(nodes, function (d) { return d.id || (d.id = ++i); })
 
+    function altclick(d) {
+      let children = d._children ? d._children : d.children;
+      console.log("clicked")
+      console.log(d)
+      nodes.forEach(c => {
+        // console.log(c == d)
+        if (c != d) {
+          if (c.children) {
+            c._children = c.children;
+            c.children = null;
+          }
+        }
+      });
+      d.children = children;
+      d._children = null;
+
+      let parent = d;
+      while (parent.parent != "null") {
+
+        parent = parent.parent;
+        let sub = parent._children ? parent._children : parent.children;
+        parent.children = sub;
+        parent._children = null;
+      }
+
+      console.log(d)
+      console.log(nodes)
+      update(d);
+    }
+
     // Enter any new nodes at the parent's previous position.
     let nodeEnter = node.enter().append("g")
       .attr("class", "node")
       .attr("transform", function (d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
       .on("click", altclick);
-
 
     nodeEnter.append("circle")
       .attr("r", 1e-6)
@@ -166,8 +195,8 @@ function generateTree(treeData) {
       .style("fill-opacity", 1);
 
     // Transition exiting nodes to the parent's new position.
-    let nodeExit = node.exit().transition()
-      .duration(duration)
+    let nodeExit = node.exit()
+      // .duration(duration)
       .attr("transform", function (d) { return "translate(" + source.y + "," + source.x + ")"; })
       .remove();
 
@@ -195,8 +224,8 @@ function generateTree(treeData) {
       .attr("d", diagonal);
 
     // Transition exiting nodes to the parent's new position.
-    link.exit().transition()
-      .duration(duration)
+    link.exit()
+      // .duration(duration)
       .attr("d", function (d) {
         let o = { x: source.x, y: source.y };
         return diagonal({ source: o, target: o });
