@@ -8,6 +8,7 @@
 
 var dataTable = { nodes: [] };
 
+// Load data
 let rootNode = {};
 let treeData;
 
@@ -73,8 +74,8 @@ treeData = [
 function generateTree(treeData) {
 // ************** Generate the tree diagram	 *****************
 var margin = { top: 20, right: 120, bottom: 20, left: 120 },
-  width = 960 - margin.right - margin.left,
-  height = 500 - margin.top - margin.bottom;
+  width = 1200 - margin.right - margin.left,
+  height = 600 - margin.top - margin.bottom;
 
 var i = 0,
   duration = 750,
@@ -120,7 +121,19 @@ function update(source) {
   var nodeEnter = node.enter().append("g")
     .attr("class", "node")
     .attr("transform", function (d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-    .on("click", click);
+    .on("click", altClick);
+
+  function altClick(d) {
+    nodes.forEach(e => {
+      e.children = e._children;
+      e._children = null;
+    });
+    d._children = d.children;
+    d.children = null;
+
+    update(d);
+    console.log(root)
+  }
 
   nodeEnter.append("circle")
     .attr("r", 1e-6)
@@ -201,5 +214,6 @@ function click(d) {
   }
   console.log(root);
   update(d);
-}}
-
+  console.log(root)
+}
+}
