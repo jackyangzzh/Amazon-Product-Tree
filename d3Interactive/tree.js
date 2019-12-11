@@ -1,22 +1,53 @@
 
-var nodeTable = { nodes: [] };
-var linkTable = { links: [] };
-var table = { nodes: [], links: [] };
-var nodeData;
-var linkData;
-var tableData;
+// var nodeTable = { nodes: [] };
+// var linkTable = { links: [] };
+// var table = { nodes: [], links: [] };
+// var nodeData;
+// var linkData;
+// var tableData;
 
-d3.csv('../data/PetSupplies.csv', function (data) {
+var dataTable = {nodes: []};
 
-    for (var i = 0; i < data.length; i++) {
-        table.nodes.push({ name: data[i].name, group: parseInt(data[i].parent), size: 1});
-        table.links.push({ source: parseInt(data[i].id), target: parseInt(data[i].parent), value: 1 });
+let rootNode = {};
+
+d3.csv('../data/PetSupplies.csv', function (source) {
+
+    // for (var i = 0; i < data.length; i++) {
+    //     table.nodes.push({ name: data[i].name, group: parseInt(data[i].parent), size: 1});
+    //     table.links.push({ source: parseInt(data[i].id), target: parseInt(data[i].parent), value: 1 });
+    // }
+
+
+    // tableData = JSON.stringify(table);
+
+    // let root = {};
+
+
+
+    function convertChildren (node, id){
+        node.id = id;
+        node.name = source[id].name;
+        node.productCount = source[id].productCount;
+        node.parent = node.id == 0 ? null : source[id].parent;
+        if(source[id].children == "[]") {
+            node.children = [];
+            return node;
+        }else{
+            let arr = source[id].children.substring(1, source[id].children.length-1).split(", ").map(Number);
+            node.children = [];
+            arr.forEach( childId => {
+                let child = {};
+ 
+                node.children.push(convertChildren(child, childId));
+            });
+            return node;
+        }
     }
 
-
-    tableData = JSON.stringify(table);
-    console.log(tableData);
+    convertChildren(rootNode,0);
+// console.log( rootNode);
 });
+
 
 var treeData = [
   {
@@ -45,6 +76,8 @@ var treeData = [
   }
 ];
 
+// treeData = JSON.stringify(rootNode);
+console.log(treeData);
 
 // ************** Generate the tree diagram	 *****************
 var margin = {top: 20, right: 120, bottom: 20, left: 120},
@@ -67,7 +100,8 @@ var svg = d3.select("body").append("svg")
   .append("g")
 	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-root = treeData[0];
+// root = treeData[0];
+root = rootNode;
 root.x0 = height / 2;
 root.y0 = 0;
   
