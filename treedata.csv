@@ -1,6 +1,0 @@
-name,parent
-Level 2: A,Top Level
-Top Level,null
-Son of A,Level 2: A
-Daughter of A,Level 2: A
-Level 2: B,Top Level

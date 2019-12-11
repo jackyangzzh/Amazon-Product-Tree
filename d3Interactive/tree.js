@@ -1,8 +1,15 @@
+
+// let nodeTable = { nodes: [] };
+// let linkTable = { links: [] };
+// let table = { nodes: [], links: [] };
+// let nodeData;
+// let linkData;
+// let tableData;
+
 let dataTable = { nodes: [] };
 
 // Load data
 let rootNode = {};
-let rootNodeName;
 let treeData;
 
 dataProcess().then(generateTree(treeData));
@@ -35,9 +42,6 @@ async function dataProcess() {
 
   });
 
-  convertChildren(rootNode, 0);
-
-  rootNode.name = source[0].name;
 
   treeData = [
     {
@@ -81,7 +85,6 @@ async function dataProcess() {
   treeData.push(rootNode);
 }
 
-  console.log(treeData[0]);
 
 function generateTree(treeData) {
   // ************** Generate the tree diagram	 *****************
@@ -120,9 +123,6 @@ function generateTree(treeData) {
 
   function update(source) {
 
-    // Compute the new tree layout.
-    let nodes = tree.nodes(root).reverse();
-      links = tree.links(nodes);
 
     // Compute the new tree layout.
     let nodes = tree.nodes(root).reverse();
@@ -256,7 +256,3 @@ function generateTree(treeData) {
 
   }
 }
-
-// ************** Generate the tree diagram	 *****************
-
-

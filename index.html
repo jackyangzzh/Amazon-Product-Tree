@@ -1,138 +1,61 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Incremental exploration of a large graph</title>
+<style>
+@import url(../style.css);
 
-    <title>Collapsible Tree Example</title>
-
-    <style>
-
-	.node circle {
-	  fill: #fff;
-	  stroke: steelblue;
-	  stroke-width: 3px;
-	}
-
-	.node text { font: 12px sans-serif; }
-
-	.link {
-	  fill: none;
-	  stroke: #ccc;
-	  stroke-width: 2px;
-	}
-	
-    </style>
-
-  </head>
-
-  <body>
-
-<!-- load the d3.js library -->	
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
-	
-<script>
-
-var cluster = d3.layout.pack()
-  .size([width, height])
-  .value(function(d) {
-    return d.values;
-  });
-
-// ************** Generate the tree diagram	 *****************
-var margin = {top: 20, right: 120, bottom: 20, left: 120},
-	width = 960 - margin.right - margin.left,
-	height = 500 - margin.top - margin.bottom;
-	
-var i = 0;
-
-var tree = d3.layout.tree()
-	.size([height, width]);
-
-var diagonal = d3.svg.diagonal()
-	.projection(function(d) { return [d.y, d.x]; });
-
-var svg = d3.select("body").append("svg")
-	.attr("width", width + margin.right + margin.left)
-	.attr("height", height + margin.top + margin.bottom)
-  .append("g")
-	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-// load the external data
-d3.csv("treedata.csv", function(error, data) {
-
-// *********** Convert flat data into a nice tree ***************
-// create a name: node map
-var dataMap = data.reduce(function(map, node) {
-  map[node.name] = node;
-  console.log(node.name);
-	return map;
-}, {});
-
-// create the tree array
-var treeData = [];
-data.forEach(function(node) {
-	// add to parent
-	var parent = dataMap[node.parent];
-	if (parent) {
-		// create child array if it doesn't exist
-		(parent.children || (parent.children = []))
-			// add node to child array
-			.push(node);
-	} else {
-		// parent is null or missing
-		treeData.push(node);
-	}
-});
-
-  root = treeData[0];
-  update(root);
-});
-
-function update(source) {
-
-  // Compute the new tree layout.
-  var nodes = tree.nodes(root).reverse(),
-	  links = tree.links(nodes);
-
-  // Normalize for fixed-depth.
-  nodes.forEach(function(d) { d.y = d.depth * 180; });
-
-  // Declare the nodesâ€¦
-  var node = svg.selectAll("g.node")
-	  .data(nodes, function(d) { return d.id || (d.id = ++i); });
-
-  // Enter the nodes.
-  var nodeEnter = node.enter().append("g")
-	  .attr("class", "node")
-	  .attr("transform", function(d) { 
-		  return "translate(" + d.y + "," + d.x + ")"; });
-
-  nodeEnter.append("circle")
-	  .attr("r", 10)
-	  .style("fill", "#fff");
-
-  nodeEnter.append("text")
-	  .attr("x", function(d) { 
-		  return d.children || d._children ? -13 : 13; })
-	  .attr("dy", ".35em")
-	  .attr("text-anchor", function(d) { 
-		  return d.children || d._children ? "end" : "start"; })
-	  .text(function(d) { return d.name; })
-	  .style("fill-opacity", 1);
-
-  // Declare the linksâ€¦
-  var link = svg.selectAll("path.link")
-	  .data(links, function(d) { return d.target.id; });
-
-  // Enter the links.
-  link.enter().insert("path", "g")
-	  .attr("class", "link")
-	  .attr("d", diagonal);
-
+.background {
+    stroke: gray;
+    stroke-width: 1px;
+    fill: white;
+}
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
 }
 
-</script>
-	
-  </body>
+.spike {
+    fill: url(#SpikeGradient);
+    stroke-width: 0;
+}
+
+</style>
+</head>
+<body>
+<h1>Online Graph Exploration</h1>
+<p>Pink nodes are incomplete.  Click on them to expand their neighbours.</p>
+<script src="../d3.v3.js"></script>
+<script src="../cola.min.js"></script>
+<script src="./onlineGraph/tmdbgraph.js"></script>
+    <button id="fullScreenButton">Full screen</button>
+    <button id="zoomToFitButton">Zoom to fit (or double click)</button>
+Mouse wheel zooms, left-mouse-button drag on the background to pan.
+<p>
+    This example introduces the notion of a "model" graph and a "view" graph.  The model graph is too large to sensibly display in one go.
+    Instead we begin with just a small neighbourhood showing in the view graph which is bound to SVG visuals following the usual
+    D3 pattern.  The pink nodes have neighbours in the model graph
+    that are not shown in the view graph.  Clicking on a red node causes its invisible neighbours to be added to the view and
+    we use D3's enter/exit selections to update the display as usual.
+    </p><p>
+    The stability of WebCoLa layout makes this type of dynamic graph layout much less chaotic than is possible with the D3 force layout.
+    <p>
+    Data from <a href="http://www.themoviedb.org">tmdb</a>, unfortunately they limit us to 40 queries per 10 seconds so the responses come in a gradually.  
+    It's actually quite hypnotic watching the graph evolve at this lazy pace.
+    </p>
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-63535113-1', 'auto');
+  ga('send', 'pageview');
+
+    </script>
+</body>
 </html>
