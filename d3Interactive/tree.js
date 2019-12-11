@@ -81,8 +81,8 @@ async function dataProcess() {
   // rootNode.name = rootNode.name;
 
 
-  // treeData = [];
-  // treeData.push(rootNode);
+  treeData = [];
+  treeData.push(rootNode);
 }
 
 
@@ -90,7 +90,7 @@ function generateTree(treeData) {
   // ************** Generate the tree diagram	 *****************
   let margin = { top: 20, right: 120, bottom: 20, left: 120 },
     width = 1200 - margin.right - margin.left,
-    height = 1600 - margin.top - margin.bottom;
+    height = 500 - margin.top - margin.bottom;
 
   let i = 0,
     duration = 750,
