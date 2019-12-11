@@ -1,12 +1,12 @@
 
-// var nodeTable = { nodes: [] };
-// var linkTable = { links: [] };
-// var table = { nodes: [], links: [] };
-// var nodeData;
-// var linkData;
-// var tableData;
+// let nodeTable = { nodes: [] };
+// let linkTable = { links: [] };
+// let table = { nodes: [], links: [] };
+// let nodeData;
+// let linkData;
+// let tableData;
 
-var dataTable = { nodes: [] };
+let dataTable = { nodes: [] };
 
 // Load data
 let rootNode = {};
@@ -54,7 +54,13 @@ async function dataProcess() {
           "children": [
             {
               "name": "Son of A",
-              "parent": "Level 2: A"
+              "parent": "Level 2: A",
+              "children": [
+                {
+                  "name": "granson of A",
+                  "parent": "Son of A"
+                }
+              ]
             },
             {
               "name": "Daughter of A",
@@ -75,28 +81,28 @@ async function dataProcess() {
   // rootNode.name = rootNode.name;
 
 
-  treeData = [];
-  treeData.push(rootNode);
+  // treeData = [];
+  // treeData.push(rootNode);
 }
 
 
 function generateTree(treeData) {
   // ************** Generate the tree diagram	 *****************
-  var margin = { top: 20, right: 120, bottom: 20, left: 120 },
+  let margin = { top: 20, right: 120, bottom: 20, left: 120 },
     width = 1200 - margin.right - margin.left,
-    height = 600 - margin.top - margin.bottom;
+    height = 1600 - margin.top - margin.bottom;
 
-  var i = 0,
+  let i = 0,
     duration = 750,
     root;
 
-  var tree = d3.layout.tree()
+  let tree = d3.layout.tree()
     .size([height, width]);
 
-  var diagonal = d3.svg.diagonal()
+  let diagonal = d3.svg.diagonal()
     .projection(function (d) { return [d.y, d.x]; });
 
-  var svg = d3.select("body").append("svg")
+  let svg = d3.select("body").append("svg")
     .attr("width", width + margin.right + margin.left)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -119,21 +125,21 @@ function generateTree(treeData) {
 
 
     // Compute the new tree layout.
-    var nodes = tree.nodes(root).reverse();
+    let nodes = tree.nodes(root).reverse();
     links = tree.links(nodes);
 
     // Normalize for fixed-depth.
     nodes.forEach(function (d) { d.y = d.depth * 180; });
 
     // Update the nodes…
-    var node = svg.selectAll("g.node")
+    let node = svg.selectAll("g.node")
       .data(nodes, function (d) { return d.id || (d.id = ++i); })
 
     // Enter any new nodes at the parent's previous position.
-    var nodeEnter = node.enter().append("g")
+    let nodeEnter = node.enter().append("g")
       .attr("class", "node")
       .attr("transform", function (d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-      .on("click", click);
+      .on("click", altclick);
 
 
     nodeEnter.append("circle")
@@ -148,7 +154,7 @@ function generateTree(treeData) {
       .style("fill-opacity", 1e-6);
 
     // Transition nodes to their new position.
-    var nodeUpdate = node.transition()
+    let nodeUpdate = node.transition()
       .duration(duration)
       .attr("transform", function (d) { return "translate(" + d.y + "," + d.x + ")"; });
 
@@ -160,7 +166,7 @@ function generateTree(treeData) {
       .style("fill-opacity", 1);
 
     // Transition exiting nodes to the parent's new position.
-    var nodeExit = node.exit().transition()
+    let nodeExit = node.exit().transition()
       .duration(duration)
       .attr("transform", function (d) { return "translate(" + source.y + "," + source.x + ")"; })
       .remove();
@@ -172,14 +178,14 @@ function generateTree(treeData) {
       .style("fill-opacity", 1e-6);
 
     // Update the links…
-    var link = svg.selectAll("path.link")
+    let link = svg.selectAll("path.link")
       .data(links, function (d) { return d.target.id; });
 
     // Enter any new links at the parent's previous position.
     link.enter().insert("path", "g")
       .attr("class", "link")
       .attr("d", function (d) {
-        var o = { x: source.x0, y: source.y0 };
+        let o = { x: source.x0, y: source.y0 };
         return diagonal({ source: o, target: o });
       });
 
@@ -192,7 +198,7 @@ function generateTree(treeData) {
     link.exit().transition()
       .duration(duration)
       .attr("d", function (d) {
-        var o = { x: source.x, y: source.y };
+        let o = { x: source.x, y: source.y };
         return diagonal({ source: o, target: o });
       })
       .remove();
