@@ -1,5 +1,5 @@
-var width = 960,
-    height = 500;
+var width = 1160,
+    height = 900;
 
 var d3cola = cola.d3adaptor()
     .avoidOverlaps(true)
