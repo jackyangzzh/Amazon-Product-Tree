@@ -18,7 +18,10 @@ async function dataProcess() {
   d3.csv('../data/PetSupplies.csv', function (source) {
 
     convertChildren(rootNode, 0);
-
+    /**
+     * 
+     * Caculate depth (reversed, with root of largest depth)
+     */
     function convertChildren(node, id) {
       node.id = id;
       node.name = source[id].name;
@@ -57,7 +60,7 @@ async function dataProcess() {
               "parent": "Level 2: A",
               "children": [
                 {
-                  "name": "granson of A",
+                  "name": "Grandson of A",
                   "parent": "Son of A"
                 }
               ]
@@ -76,13 +79,10 @@ async function dataProcess() {
     }
   ];
 
-  // rootNode.children = rootNode._children;
-  // rootNode._children = null;
-  // rootNode.name = rootNode.name;
 
 
-  treeData = [];
-  treeData.push(rootNode);
+  // treeData = [];
+  // treeData.push(rootNode);
 }
 
 
@@ -169,7 +169,7 @@ function generateTree(treeData) {
     let nodeEnter = node.enter().append("g")
       .attr("class", "node")
       .attr("transform", function (d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-      .on("click", altclick);
+      .on("click", click);
 
     nodeEnter.append("circle")
       .attr("r", 1e-6)
@@ -237,7 +237,37 @@ function generateTree(treeData) {
       d.x0 = d.x;
       d.y0 = d.y;
     });
+
+    // Buttons
+    function collapse() {
+      nodes.forEach(n => {
+        let children = n.children ? n.children : n._children;
+        n._children = children;
+        n.children = null;
+      });
+      update(root);
+      console.log("collapsed")
+      console.log(nodes)
+    }
+    d3.select('#collapse').on("click", collapse);
+
+    function expand() {
+      nodes.forEach(n => {
+        let children = n.children ? n.children : n._children;
+        n.children = children;
+        n._children = null;
+        update(n);
+      });
+      console.log("expanded")
+      console.log(nodes)
+    }
+    d3.select('#expand').on('click',expand);
+
+
+
   }
+
+
 
   // Toggle children on click.
   function click(d) {
