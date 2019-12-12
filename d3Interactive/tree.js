@@ -122,6 +122,7 @@ function generateTree(treeData) {
 
 
   function update(source) {
+    console.log(source);
 
     // Compute the new tree layout.
     let nodes = tree.nodes(root).reverse();
@@ -132,9 +133,11 @@ function generateTree(treeData) {
 
     // Update the nodes…
     let node = svg.selectAll("g.node")
-      .data(nodes, function (d) { return d.id || (d.id = ++i); })
-
+      .data(nodes, function (d) {return d.id; })
+      console.log(root)
+      
     function altclick(d) {
+      console.log("Clicked");
       let children = d._children ? d._children : d.children;
       nodes.forEach(c => {
         // console.log(c == d)
@@ -231,9 +234,10 @@ function generateTree(treeData) {
       d.x0 = d.x;
       d.y0 = d.y;
     });
-
+;
     // Buttons
     function collapse() {
+
       nodes.forEach(n => {
         let children = n.children ? n.children : n._children;
         n._children = children;
@@ -253,7 +257,6 @@ function generateTree(treeData) {
         update(n);
       });
       console.log("expanded")
-      console.log(nodes)
     }
     d3.select('#expand').on('click',expand);
 
