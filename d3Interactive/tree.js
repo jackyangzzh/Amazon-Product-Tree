@@ -81,8 +81,8 @@ async function dataProcess() {
 
 
 
-  // treeData = [];
-  // treeData.push(rootNode);
+  treeData = [];
+  treeData.push(rootNode);
 }
 
 
@@ -169,7 +169,7 @@ function generateTree(treeData) {
     let nodeEnter = node.enter().append("g")
       .attr("class", "node")
       .attr("transform", function (d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-      .on("click", click);
+      .on("click", altclick);
 
     nodeEnter.append("circle")
       .attr("r", 1e-6)
