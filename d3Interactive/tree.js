@@ -12,9 +12,6 @@ let dataTable = { nodes: [] };
 let rootNode = {};
 let treeData;
 
-dataProcess();
-
-function dataProcess() {
   d3.csv('../data/PetSupplies.csv', function (source) {
 
     convertChildren(rootNode, 0);
@@ -23,6 +20,8 @@ function dataProcess() {
       node.id = id;
       node.name = source[id].name;
       node.productCount = parseInt(source[id].productCount);
+      node.subtreeProductCount = parseInt(source[id].subtreeProductCount);
+      node.numChildren = parseInt(source[id].numChildren);
       node.parent = node.id == 0 ? "null" : source[id].parent;
       if (source[id].children == "[]") {
         node.children = [];
@@ -39,6 +38,7 @@ function dataProcess() {
       }
     }
 
+    generateTree(treeData);
   });
 
   treeData = [
@@ -82,8 +82,8 @@ function dataProcess() {
   treeData = [];
   treeData.push(rootNode);
 
-  generateTree(treeData);
-}
+
+
 
 
 function generateTree(treeData) {
@@ -111,7 +111,7 @@ function generateTree(treeData) {
   root = treeData[0];
   // root._children = root.children;
   // root.children = null;
-  console.log(root);
+  // console.log(root);
   root.x0 = height / 2;
   root.y0 = 0;
 
@@ -157,8 +157,8 @@ function generateTree(treeData) {
         parent._children = null;
       }
 
-      console.log(d)
-      console.log(nodes)
+      // console.log(d)
+      // console.log(nodes)
       update(d);
     }
 
@@ -185,7 +185,7 @@ function generateTree(treeData) {
       .attr("transform", function (d) { return "translate(" + d.y + "," + d.x + ")"; });
 
     nodeUpdate.select("circle")
-      .attr("r", function (d) {console.log(d); return 10})
+      .attr("r", function (d) {return Math.sqrt(d.numChildren) + 10;})
       .style("fill", function (d) { return d._children ? "lightsteelblue" : "#fff"; });
 
     nodeUpdate.select("text")
@@ -238,17 +238,13 @@ function generateTree(treeData) {
 
   // Toggle children on click.
   function click(d) {
-    console.log(d);
     if (d.children) {
       d._children = d.children;
       d.children = null;
-      console.log("if called");
     } else {
       d.children = d._children;
       d._children = null;
-      console.log("else called");
     }
-    // console.log(root)
     update(d);
 
   }
