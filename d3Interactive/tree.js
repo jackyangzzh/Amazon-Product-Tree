@@ -19,6 +19,8 @@ let treeData;
      * 
      * Caculate depth (reversed, with root of largest depth)
      */
+    let nodeDepth;
+
     function convertChildren(node, id) {
       node.id = id;
       node.name = source[id].name;
@@ -34,7 +36,7 @@ let treeData;
         node.children = [];
         arr.forEach(childId => {
           let child = {};
-
+ 
           node.children.push(convertChildren(child, childId));
         });
         return node;
@@ -81,8 +83,6 @@ let treeData;
 
   treeData = [];
   treeData.push(rootNode);
-
-
 
 
 
@@ -156,9 +156,6 @@ function generateTree(treeData) {
         parent.children = sub;
         parent._children = null;
       }
-
-      // console.log(d)
-      // console.log(nodes)
       update(d);
     }
 
@@ -185,7 +182,7 @@ function generateTree(treeData) {
       .attr("transform", function (d) { return "translate(" + d.y + "," + d.x + ")"; });
 
     nodeUpdate.select("circle")
-      .attr("r", function (d) {return Math.sqrt(d.numChildren) + 10;})
+      .attr("r", function (d) {return Math.sqrt(d.numChildren)*1.5 + 10;})
       .style("fill", function (d) { return d._children ? "lightsteelblue" : "#fff"; });
 
     nodeUpdate.select("text")
@@ -244,7 +241,7 @@ function generateTree(treeData) {
       });
       update(root);
       console.log("collapsed")
-      console.log(nodes)
+
     }
     d3.select('#collapse').on("click", collapse);
 
@@ -259,8 +256,6 @@ function generateTree(treeData) {
       console.log(nodes)
     }
     d3.select('#expand').on('click',expand);
-
-
 
   }
 
