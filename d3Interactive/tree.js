@@ -12,9 +12,9 @@ let dataTable = { nodes: [] };
 let rootNode = {};
 let treeData;
 
-dataProcess().then(generateTree(treeData));
+dataProcess();
 
-async function dataProcess() {
+function dataProcess() {
   d3.csv('../data/PetSupplies.csv', function (source) {
 
     convertChildren(rootNode, 0);
@@ -42,9 +42,7 @@ async function dataProcess() {
       }
     }
 
-
   });
-
 
   treeData = [
     {
@@ -83,6 +81,8 @@ async function dataProcess() {
 
   treeData = [];
   treeData.push(rootNode);
+
+  generateTree(treeData);
 }
 
 
@@ -90,7 +90,7 @@ function generateTree(treeData) {
   // ************** Generate the tree diagram	 *****************
   let margin = { top: 20, right: 120, bottom: 20, left: 120 },
     width = 1200 - margin.right - margin.left,
-    height = 500 - margin.top - margin.bottom;
+    height = 1000 - margin.top - margin.bottom;
 
   let i = 0,
     duration = 750,
@@ -123,13 +123,12 @@ function generateTree(treeData) {
 
   function update(source) {
 
-
     // Compute the new tree layout.
     let nodes = tree.nodes(root).reverse();
     links = tree.links(nodes);
 
     // Normalize for fixed-depth.
-    nodes.forEach(function (d) { d.y = d.depth * 180; });
+    nodes.forEach(function (d) { d.y = d.depth * 250; });
 
     // Update the nodes…
     let node = svg.selectAll("g.node")
@@ -137,8 +136,6 @@ function generateTree(treeData) {
 
     function altclick(d) {
       let children = d._children ? d._children : d.children;
-      console.log("clicked")
-      console.log(d)
       nodes.forEach(c => {
         // console.log(c == d)
         if (c != d) {
@@ -188,7 +185,7 @@ function generateTree(treeData) {
       .attr("transform", function (d) { return "translate(" + d.y + "," + d.x + ")"; });
 
     nodeUpdate.select("circle")
-      .attr("r", 10)
+      .attr("r", function (d) {console.log(d); return 10})
       .style("fill", function (d) { return d._children ? "lightsteelblue" : "#fff"; });
 
     nodeUpdate.select("text")
