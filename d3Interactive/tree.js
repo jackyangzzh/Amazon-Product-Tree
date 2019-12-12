@@ -159,6 +159,7 @@ function generateTree(treeData) {
 
       console.log(d)
       console.log(nodes)
+      d.style("fill", function (d) { return d._children ? "yellow " : "#666"; });
       update(d);
     }
 
