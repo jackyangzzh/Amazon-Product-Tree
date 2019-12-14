@@ -21,9 +21,10 @@ let treeData;
      */
     let nodeDepth;
 
-    function convertChildren(node, id) {
+    function convertChildren(node, id, nodeDepth) {
       node.id = id;
       node.name = source[id].name;
+      node.nodeDepth = node.id == 0 ? nodeDepth = 1 : nodeDepth ;
       node.productCount = parseInt(source[id].productCount);
       node.subtreeProductCount = parseInt(source[id].subtreeProductCount);
       node.numChildren = parseInt(source[id].numChildren);
@@ -37,7 +38,7 @@ let treeData;
         arr.forEach(childId => {
           let child = {};
  
-          node.children.push(convertChildren(child, childId));
+          node.children.push(convertChildren(child, childId, nodeDepth + 1));
         });
         return node;
       }
@@ -89,7 +90,7 @@ let treeData;
 function generateTree(treeData) {
   // ************** Generate the tree diagram	 *****************
   let margin = { top: 20, right: 120, bottom: 20, left: 120 },
-    width = 1200 - margin.right - margin.left,
+    width = 1500 - margin.right - margin.left,
     height = 1000 - margin.top - margin.bottom;
 
   let i = 0,
@@ -122,14 +123,14 @@ function generateTree(treeData) {
 
 
   function update(source) {
-    console.log(source);
 
+    console.log(source);
     // Compute the new tree layout.
     let nodes = tree.nodes(root).reverse();
     links = tree.links(nodes);
 
     // Normalize for fixed-depth.
-    nodes.forEach(function (d) { d.y = d.depth * 250; });
+    nodes.forEach(function (d) { d.y = d.depth * 270; });
 
     // Update the nodes…
     let node = svg.selectAll("g.node")
@@ -185,7 +186,7 @@ function generateTree(treeData) {
       .attr("transform", function (d) { return "translate(" + d.y + "," + d.x + ")"; });
 
     nodeUpdate.select("circle")
-      .attr("r", function (d) {return Math.sqrt(d.numChildren)*1.5 + 10;})
+      .attr("r", function (d) {return Math.sqrt(d.numChildren)*1.7 + 10;})
       .style("fill", function (d) { return d._children ? "lightsteelblue" : "#fff"; });
 
     nodeUpdate.select("text")
