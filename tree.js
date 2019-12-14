@@ -1,159 +1,296 @@
-var width = 1160,
-    height = 900;
 
-var d3cola = cola.d3adaptor()
-    .avoidOverlaps(true)
-    .size([width, height]);
+// let nodeTable = { nodes: [] };
+// let linkTable = { links: [] };
+// let table = { nodes: [], links: [] };
+// let nodeData;
+// let linkData;
+// let tableData;
+let rScale = 0.1;
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+let dataTable = { nodes: [] };
 
-var nodeRadius = 5;
+// Load data
+let rootNode = {};
+let treeData;
 
-nodeSettings = {
-    emperor: { number: 1, color: "#005a32", size: 15 },
-    governor: { number: 0, color: "#e5f5e0", size: 10 },
-    hierarchical3: { number: 0, color: "#c7e9c0", size: 8 },
-    hierarchical4: { number: 0, color: "#a1d99b", size: 6 },
-    hierarchical5: { number: 0, color: "#74c476", size: 4 },
-    hierarchical6: { number: 0, color: "#41ab5d", size: 2 },
-    outsiderA: { number: 0, color: "#99AD99", size: 8 },
-    outsiderB: { number: 2, color: "#9BB3A7", size: 4 }
-}
+  d3.csv('../data/PetSupplies.csv', function (source) {
 
-graph = graphConstructor();
+    convertChildren(rootNode, 0);
+    /**
+     * 
+     * Caculate depth (reversed, with root of largest depth)
+     */
+    let nodeDepth;
 
-graph.nodes.forEach(function (v) {
-    v.height = 8 * nodeSettings[v.type].size;
-    v.width = 2 * nodeSettings[v.type].size;
-});
+    function convertChildren(node, id, nodeDepth) {
+      node.id = id;
+      node.name = source[id].name;
+      node.nodeDepth = node.id == 0 ? nodeDepth = 1 : nodeDepth ;
+      node.productCount = parseInt(source[id].productCount);
+      node.subtreeProductCount = parseInt(source[id].subtreeProductCount);
+      node.numChildren = parseInt(source[id].numChildren);
+      node.parent = node.id == 0 ? "null" : source[id].parent;
+      if (source[id].children == "[]") {
+        node.children = [];
+        return node;
+      } else {
+        let arr = source[id].children.substring(1, source[id].children.length - 1).split(", ").map(Number);
+        node.children = [];
+        arr.forEach(childId => {
+          let child = {};
+          node.children.push(convertChildren(child, childId, nodeDepth + 1));
+        });
+        return node;
+      }
+    }
 
-d3cola
-    .nodes(graph.nodes)
-    .links(graph.links)
-    .flowLayout("y", 30)
-    .symmetricDiffLinkLengths(25)
-    .start(10, 40, 80);
 
-// define arrow markers for graph links
-svg.append('svg:defs').append('svg:marker')
-    .attr('id', 'end-arrow')
-    .attr('viewBox', '0 -5 10 10')
-    .attr('refX', 6)
-    .attr('markerWidth', 3)
-    .attr('markerHeight', 3)
-    .attr('orient', 'auto')
-    .append('svg:path')
-    .attr('d', 'M0,-5L10,0L0,5')
-    .attr('fill', '#000');
+    function childCalc(node){
+      if (node.children == "[]") {
+        node.childrenCount = 1;
+      }else{
+        node.children.forEach((c) => {
+          // console.log(c);
+          node.childrenCount += childCalc(c);
+        })
+      }
+      //console.log(node.children);
+      return node.childrenCount;
+    }
 
-var path = svg.selectAll(".link")
-    .data(graph.links)
-    .enter().append('svg:path')
-    .attr('class', 'link');
+    childCalc(rootNode);
 
-var node = svg.selectAll(".node")
-    .data(graph.nodes)
-    .enter().append("circle")
-    .attr("class", "node")
-    .attr("r", function (d) { return nodeSettings[d.type].size })
-    .style("fill", function (d) { return nodeSettings[d.type].color; })
-    .call(d3cola.drag);
+    generateTree(treeData);
+  });
 
-node.append("title")
-    .text(function (d) { return d.name; });
+  treeData = [
+    {
+      "name": "Top Level",
+      "parent": "null",
+      "children": [
+        {
+          "name": "Level 2: A",
+          "parent": "Top Level",
+          "children": [
+            {
+              "name": "Son of A",
+              "parent": "Level 2: A",
+              "children": [
+                {
+                  "name": "Grandson of A",
+                  "parent": "Son of A"
+                }
+              ]
+            },
+            {
+              "name": "Daughter of A",
+              "parent": "Level 2: A"
+            }
+          ]
+        },
+        {
+          "name": "Level 2: B",
+          "parent": "Top Level"
+        }
+      ]
+    }
+  ];
 
-d3cola.on("tick", function () {
-    path.attr('d', function (d) {
-        var deltaX = d.target.x - d.source.x,
-            deltaY = d.target.y - d.source.y,
-            dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY),
-            normX = deltaX / dist,
-            normY = deltaY / dist,
-            sourcePadding = nodeSettings[d.source.type].size,
-            targetPadding = nodeSettings[d.target.type].size + 2,
-            sourceX = d.source.x + (sourcePadding * normX),
-            sourceY = d.source.y + (sourcePadding * normY),
-            targetX = d.target.x - (targetPadding * normX),
-            targetY = d.target.y - (targetPadding * normY);
-        return 'M' + sourceX + ',' + sourceY + 'L' + targetX + ',' + targetY;
+
+
+  treeData = [];
+  treeData.push(rootNode);
+
+
+
+function generateTree(treeData) {
+  // ************** Generate the tree diagram	 *****************
+  let margin = { top: 20, right: 120, bottom: 20, left: 120 },
+    width = 1500 - margin.right - margin.left,
+    height = 2000 - margin.top - margin.bottom;
+
+  let i = 0,
+    duration = 750,
+    root;
+
+  let tree = d3.layout.tree()
+    .size([height, width]);
+
+  let diagonal = d3.svg.diagonal()
+    .projection(function (d) { return [d.y, d.x]; });
+
+  let svg = d3.select("body").append("svg")
+    .attr("width", width + margin.right + margin.left)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  root = treeData[0];
+  // root._children = root.children;
+  // root.children = null;
+  // console.log(root);
+  root.x0 = height / 2;
+  root.y0 = 0;
+
+  update(root);
+
+
+  d3.select(self.frameElement).style("height", "500px");
+
+
+  function update(source) {
+
+    // Compute the new tree layout.
+    let nodes = tree.nodes(root).reverse();
+    links = tree.links(nodes);
+
+    // Normalize for fixed-depth.
+    nodes.forEach(function (d) { d.y = d.depth * 270; });
+
+    // Update the nodes…
+    let node = svg.selectAll("g.node")
+      .data(nodes, function (d) {return d.id; })
+      
+    function altclick(d) {
+      console.log("Clicked");
+      let children = d._children ? d._children : d.children;
+      nodes.forEach(c => {
+        // console.log(c == d)
+        if (c != d) {
+          if (c.children) {
+            c._children = c.children;
+            c.children = null;
+          }
+        }
+      });
+      d.children = children;
+      d._children = null;
+
+      let parent = d;
+      while (parent.parent != "null") {
+
+        parent = parent.parent;
+        let sub = parent._children ? parent._children : parent.children;
+        parent.children = sub;
+        parent._children = null;
+      }
+      update(d);
+    }
+
+    // Enter any new nodes at the parent's previous position.
+    let nodeEnter = node.enter().append("g")
+      .attr("class", "node")
+      .attr("transform", function (d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+      .on("click", altclick);
+
+    nodeEnter.append("circle")
+      .attr("r", 1e-6)
+      .style("fill", function (d) { return d._children ? "lightsteelblue" : "#fff"; });
+
+    nodeEnter.append("text")
+      .attr("x", function (d) { return d.children || d._children ? -13 : 13; })
+      .attr("dy", ".35em")
+      .attr("text-anchor", function (d) { return d.children || d._children ? "end" : "start"; })
+      .text(function (d) { return d.name; })
+      .style("fill-opacity", 1e-6);
+
+    // Transition nodes to their new position.
+    let nodeUpdate = node.transition()
+      .duration(duration)
+      .attr("transform", function (d) { return "translate(" + d.y + "," + d.x + ")"; });
+
+    let luminence = 90;
+
+    nodeUpdate.select("circle")
+      .attr("r", function (d) {return Math.sqrt(d.subtreeProductCount)*rScale + 5;})
+      .style("fill", function (d) { return d._children ? `hsl(214, 41, ${luminence})` : "#fff"; });
+
+    nodeUpdate.select("text")
+      .style("fill-opacity", 1);
+
+    // Transition exiting nodes to the parent's new position.
+    let nodeExit = node.exit()
+      // .duration(duration)
+      .attr("transform", function (d) { return "translate(" + source.y + "," + source.x + ")"; })
+      .remove();
+
+    nodeExit.select("circle")
+      .attr("r", 1e-6);
+
+    nodeExit.select("text")
+      .style("fill-opacity", 1e-6);
+
+    // Update the links…
+    let link = svg.selectAll("path.link")
+      .data(links, function (d) { return d.target.id; });
+
+    // Enter any new links at the parent's previous position.
+    link.enter().insert("path", "g")
+      .attr("class", "link")
+      .attr("d", function (d) {
+        let o = { x: source.x0, y: source.y0 };
+        return diagonal({ source: o, target: o });
+      });
+
+    // Transition links to their new position.
+    link.transition()
+      .duration(duration)
+      .attr("d", diagonal);
+
+    // Transition exiting nodes to the parent's new position.
+    link.exit()
+      // .duration(duration)
+      .attr("d", function (d) {
+        let o = { x: source.x, y: source.y };
+        return diagonal({ source: o, target: o });
+      })
+      .remove();
+
+    // Stash the old positions for transition.
+    nodes.forEach(function (d) {
+      d.x0 = d.x;
+      d.y0 = d.y;
     });
+;
+    // Buttons
+    function collapse() {
 
-    node.attr("cx", function (d) { return d.x; })
-        .attr("cy", function (d) { return d.y; });
-});
+      nodes.forEach(n => {
+        let children = n.children ? n.children : n._children;
+        n._children = children;
+        n.children = null;
+      });
+      update(root);
+      console.log("collapsed")
 
-
-function graphConstructor() {
-    var nodes = [], links = [];
-
-
-    var verticalEdgeSettings =
-        [
-            { source: "governor", target: "emperor", number: 6, numbermin: 4 },
-            { source: "hierarchical3", target: "governor", number: 3, numbermin: 2 },
-            { source: "hierarchical4", target: "hierarchical3", number: 3, numbermin: 1 },
-            { source: "hierarchical5", target: "hierarchical4", number: 3, numbermin: 1 },
-            { source: "hierarchical6", target: "hierarchical5", number: 5, numbermin: 0 },
-            { source: "outsiderA", target: "emperor", number: 2, numbermin: 2 }
-        ]
-
-    var horizontalEdgeSettings =
-        [
-            { source: "governor", target: "governor", probability: .01 },
-            { source: "hierarchical3", target: "hierarchical3", probability: .05 },
-            { source: "hierarchical4", target: "hierarchical4", probability: .025 },
-            { source: "hierarchical5", target: "hierarchical5", probability: .01 },
-            { source: "outsiderA", target: "emperor", probability: .1 },
-            { source: "outsiderA", target: "governor", probability: .25 },
-            { source: "outsiderB", target: "governor", probability: .1 },
-            { source: "outsiderB", target: "hierarchical3", probability: .2 }
-        ]
-
-    for (nodeClass in nodeSettings) {
-        var x = 1;
-        while (x <= nodeSettings[nodeClass].number) {
-            var topNode = { label: nodeClass + "-" + x, type: nodeClass }
-            nodes.push(topNode);
-            x++;
-        }
     }
-    var node = 0;
-    while (node < nodes.length && node < 500) {
-        for (verticalEdge in verticalEdgeSettings) {
-            if (nodes[node].type == verticalEdgeSettings[verticalEdge].target) {
-                var x = 1;
-                var x = Math.min(verticalEdgeSettings[verticalEdge].number - verticalEdgeSettings[verticalEdge].numbermin, Math.ceil(verticalEdgeSettings[verticalEdge].number * Math.random()))
-                while (x < verticalEdgeSettings[verticalEdge].number) {
-                    var spawnNode = { label: verticalEdgeSettings[verticalEdge].source + "-" + x, type: verticalEdgeSettings[verticalEdge].source }
-                    nodes.push(spawnNode);
-                    var newLink = { source: nodes[node], target: spawnNode, weight: 2, type: "vertical" };
-                    links.push(newLink);
+    d3.select('#collapse').on("click", collapse);
 
-                    x++;
-                }
-            }
-        }
-        node++;
+    function expand() {
+      nodes.forEach(n => {
+        let children = n.children ? n.children : n._children;
+        n.children = children;
+        n._children = null;
+        update(n);
+      });
+      console.log("expanded")
     }
+    d3.select('#expand').on('click',expand);
 
-    for (nodex in nodes) {
-        for (nodey in nodes) {
-            for (horizontalEdge in horizontalEdgeSettings) {
-                if (horizontalEdgeSettings[horizontalEdge].source == nodes[nodex].type && horizontalEdgeSettings[horizontalEdge].target == nodes[nodey].type) {
-                    var randomChance = Math.random();
-                    if (randomChance < horizontalEdgeSettings[horizontalEdge].probability) {
-                        var newLink = { source: nodes[nodex], target: nodes[nodey], weight: 1, type: "horizontal" };
-                        links.push(newLink);
-                    }
-                }
-            }
-        }
+  }
+
+
+
+  // Toggle children on click.
+  function click(d) {
+    if (d.children) {
+      d._children = d.children;
+      d.children = null;
+    } else {
+      d.children = d._children;
+      d._children = null;
     }
-    genNodes = nodes;
-    genEdges = links;
-    var returnObject = { links: genEdges, nodes: genNodes };
-    return returnObject;
+    update(d);
 
+  }
 }
