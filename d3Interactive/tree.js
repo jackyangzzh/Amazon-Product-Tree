@@ -5,6 +5,7 @@
 // let nodeData;
 // let linkData;
 // let tableData;
+let rScale = 0.1;
 
 let dataTable = { nodes: [] };
 
@@ -37,12 +38,27 @@ let treeData;
         node.children = [];
         arr.forEach(childId => {
           let child = {};
- 
           node.children.push(convertChildren(child, childId, nodeDepth + 1));
         });
         return node;
       }
     }
+
+
+    function childCalc(node){
+      if (node.children == "[]") {
+        node.childrenCount = 1;
+      }else{
+        node.children.forEach((c) => {
+          // console.log(c);
+          node.childrenCount += childCalc(c);
+        })
+      }
+      //console.log(node.children);
+      return node.childrenCount;
+    }
+
+    childCalc(rootNode);
 
     generateTree(treeData);
   });
@@ -91,7 +107,7 @@ function generateTree(treeData) {
   // ************** Generate the tree diagram	 *****************
   let margin = { top: 20, right: 120, bottom: 20, left: 120 },
     width = 1500 - margin.right - margin.left,
-    height = 1000 - margin.top - margin.bottom;
+    height = 2000 - margin.top - margin.bottom;
 
   let i = 0,
     duration = 750,
@@ -124,7 +140,6 @@ function generateTree(treeData) {
 
   function update(source) {
 
-    console.log(source);
     // Compute the new tree layout.
     let nodes = tree.nodes(root).reverse();
     links = tree.links(nodes);
@@ -135,7 +150,6 @@ function generateTree(treeData) {
     // Update the nodes…
     let node = svg.selectAll("g.node")
       .data(nodes, function (d) {return d.id; })
-      console.log(root)
       
     function altclick(d) {
       console.log("Clicked");
@@ -185,9 +199,11 @@ function generateTree(treeData) {
       .duration(duration)
       .attr("transform", function (d) { return "translate(" + d.y + "," + d.x + ")"; });
 
+    let luminence = 90;
+
     nodeUpdate.select("circle")
-      .attr("r", function (d) {return Math.sqrt(d.numChildren)*1.7 + 10;})
-      .style("fill", function (d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .attr("r", function (d) {return Math.sqrt(d.subtreeProductCount)*rScale + 5;})
+      .style("fill", function (d) { return d._children ? `hsl(214, 41, ${luminence})` : "#fff"; });
 
     nodeUpdate.select("text")
       .style("fill-opacity", 1);
