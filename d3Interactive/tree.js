@@ -13,7 +13,7 @@ let dataTable = { nodes: [] };
 let rootNode = {};
 let treeData;
 
-d3.csv('../data/PetSupplies.csv', function (source) {
+d3.csv('../data/all-nodes.csv', function (source) {
 
   /**
    * 

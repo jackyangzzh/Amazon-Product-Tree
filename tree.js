@@ -12,28 +12,16 @@ let dataTable = { nodes: [] };
 // Load data
 let rootNode = {};
 let treeData;
+let rootNodeDepth;
 
-d3.csv('../data/PetSupplies.csv', function (source) {
-
-  let max = 0;
-  let min = Number.POSITIVE_INFINITY;
-
-  for (let i = 0; i < source.length; i++) {
-    let temp = parseInt(source[i].numChildren);
-    if (temp > max) {
-      max = temp;
-    }
-    if (temp < min) {
-      min = temp;
-    }
-  }
+d3.csv('./data/Musical Instruments.csv', function (source) {
 
   convertChildren(rootNode, 0);
   /**
    * 
    * Caculate depth (reversed, with root of largest depth)
    */
-  let nodeDepth;
+
 
   function convertChildren(node, id, nodeDepth) {
     node.id = id;
@@ -47,7 +35,6 @@ d3.csv('../data/PetSupplies.csv', function (source) {
 
     
 
-    node.normalizedValue = (node.numChildren - min) / (max - min)
     node.parent = node.id == 0 ? "null" : source[id].parent;
     if (source[id].children == "[]") {
       node.children = [];
@@ -59,7 +46,6 @@ d3.csv('../data/PetSupplies.csv', function (source) {
         for(let i = 0; i < arr.length; i ++){
           node.childrenCount += parseInt(source[arr[i]].numChildren);
       }
-        console.log(node.childrenCount)
       node.children = [];
       //  console.log(node.childrenCount)
       arr.forEach(childId => {
@@ -70,23 +56,8 @@ d3.csv('../data/PetSupplies.csv', function (source) {
     }
   }
 
-  // function childCalc(node) {
-  //   let children = node.children;
-
-  //   if (children == "") {
-  //     return node.childrenCount = 0;
-  //   } else {
-  //     children.forEach(c => {
-  //       // console.log(c)
-  //       node.childrenCount = c.children.numChildren + childCalc(c);
-  //     })
-  //   }
-  //   // console.log(node.childrenCount);
-  //   return node.childrenCount;
-  // }
-
-  // childCalc(rootNode);
-
+  rootNodeDepth = rootNode.childrenCount;
+  console.log(rootNodeDepth);
   generateTree(treeData);
 });
 
@@ -134,7 +105,7 @@ function generateTree(treeData) {
   // ************** Generate the tree diagram	 *****************
   let margin = { top: 20, right: 120, bottom: 20, left: 120 },
     width = 1500 - margin.right - margin.left,
-    height = 2500 - margin.top - margin.bottom;
+    height = 100 * rootNode.numChildren - margin.top - margin.bottom;
 
   let i = 0,
     duration = 750,
@@ -232,8 +203,9 @@ function generateTree(treeData) {
 
     nodeUpdate.select("circle")
       .attr("r", function (d) { return Math.sqrt(d.subtreeProductCount) * rScale + 6; })
-      .style("fill", function (d) { return d._children ? `hsl(214, 41, ${1 / Math.cbrt(d.numChildren) * 110 - 35})` : "#fff"; });
+      .style("fill", function (d) { return d._children ? `hsl(214, 41, ${Math.pow((1-d.childrenCount/rootNodeDepth),2) * 100-20})` : "#fff"; });
 
+      // 1 / Math.cbrt(d.numChildren) * 110 - 35
     nodeUpdate.select("text")
       .style("fill-opacity", 1);
 
