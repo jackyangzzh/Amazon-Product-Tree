@@ -13,107 +13,120 @@ let dataTable = { nodes: [] };
 let rootNode = {};
 let treeData;
 
-  d3.csv('../data/PetSupplies.csv', function (source) {
+d3.csv('../data/PetSupplies.csv', function (source) {
 
-    let max = 0;
-    let min = Number.POSITIVE_INFINITY;
-  
-    for (let i = 0; i < source.length; i++) {
-      let temp = parseInt(source[i].numChildren);
-      if (temp > max) {
-        max = temp;
-      }
-      if (temp < min) {
-        min = temp;
-      }
+  let max = 0;
+  let min = Number.POSITIVE_INFINITY;
+
+  for (let i = 0; i < source.length; i++) {
+    let temp = parseInt(source[i].numChildren);
+    if (temp > max) {
+      max = temp;
     }
+    if (temp < min) {
+      min = temp;
+    }
+  }
 
-    convertChildren(rootNode, 0);
-    /**
-     * 
-     * Caculate depth (reversed, with root of largest depth)
-     */
-    let nodeDepth;
+  convertChildren(rootNode, 0);
+  /**
+   * 
+   * Caculate depth (reversed, with root of largest depth)
+   */
+  let nodeDepth;
 
-    function convertChildren(node, id, nodeDepth) {
-      node.id = id;
-      node.name = source[id].name;
-      node.nodeDepth = node.id == 0 ? nodeDepth = 1 : nodeDepth ;
-      node.productCount = parseInt(source[id].productCount);
-      node.subtreeProductCount = parseInt(source[id].subtreeProductCount);
-      node.numChildren = parseInt(source[id].numChildren);
-      node.normalizedValue = (node.numChildren - min) / (max - min)
-      node.parent = node.id == 0 ? "null" : source[id].parent;
-      if (source[id].children == "[]") {
-        node.children = [];
-        return node;
-      } else {
-        let arr = source[id].children.substring(1, source[id].children.length - 1).split(", ").map(Number);
-        node.children = [];
-        arr.forEach(childId => {
-          let child = {};
-          node.children.push(convertChildren(child, childId, nodeDepth + 1));
-        });
-        return node;
+  function convertChildren(node, id, nodeDepth) {
+    node.id = id;
+    node.name = source[id].name;
+    node.nodeDepth = node.id == 0 ? nodeDepth = 1 : nodeDepth;
+    node.productCount = parseInt(source[id].productCount);
+    node.subtreeProductCount = parseInt(source[id].subtreeProductCount);
+    node.numChildren = parseInt(source[id].numChildren);
+    node.childrenCount = 0;
+
+
+    
+
+    node.normalizedValue = (node.numChildren - min) / (max - min)
+    node.parent = node.id == 0 ? "null" : source[id].parent;
+    if (source[id].children == "[]") {
+      node.children = [];
+      node.childrenCount = 0;
+      return node;
+    } else {
+      let arr = source[id].children.substring(1, source[id].children.length - 1).split(", ").map(Number);
+        node.childrenCount += node.numChildren;
+        for(let i = 0; i < arr.length; i ++){
+          node.childrenCount += parseInt(source[arr[i]].numChildren);
       }
+        console.log(node.childrenCount)
+      node.children = [];
+      //  console.log(node.childrenCount)
+      arr.forEach(childId => {
+        let child = {};
+        node.children.push(convertChildren(child, childId, nodeDepth + 1));
+      });
+      return node;
     }
+  }
+
+  // function childCalc(node) {
+  //   let children = node.children;
+
+  //   if (children == "") {
+  //     return node.childrenCount = 0;
+  //   } else {
+  //     children.forEach(c => {
+  //       // console.log(c)
+  //       node.childrenCount = c.children.numChildren + childCalc(c);
+  //     })
+  //   }
+  //   // console.log(node.childrenCount);
+  //   return node.childrenCount;
+  // }
+
+  // childCalc(rootNode);
+
+  generateTree(treeData);
+});
+
+treeData = [
+  {
+    "name": "Top Level",
+    "parent": "null",
+    "children": [
+      {
+        "name": "Level 2: A",
+        "parent": "Top Level",
+        "children": [
+          {
+            "name": "Son of A",
+            "parent": "Level 2: A",
+            "children": [
+              {
+                "name": "Grandson of A",
+                "parent": "Son of A"
+              }
+            ]
+          },
+          {
+            "name": "Daughter of A",
+            "parent": "Level 2: A"
+          }
+        ]
+      },
+      {
+        "name": "Level 2: B",
+        "parent": "Top Level"
+      }
+    ]
+  }
+];
 
 
-    // function childCalc(node){
-    //   if (node.children == "[]") {
-    //     node.childrenCount = 1;
-    //   }else{
-    //     node.children.forEach((c) => {
-    //       // console.log(c);
-    //       node.childrenCount += childCalc(c);
-    //     })
-    //   }
-    //   //console.log(node.children);
-    //   return node.childrenCount;
-    // }
 
-    // childCalc(rootNode);
-
-    generateTree(treeData);
-  });
-
-  treeData = [
-    {
-      "name": "Top Level",
-      "parent": "null",
-      "children": [
-        {
-          "name": "Level 2: A",
-          "parent": "Top Level",
-          "children": [
-            {
-              "name": "Son of A",
-              "parent": "Level 2: A",
-              "children": [
-                {
-                  "name": "Grandson of A",
-                  "parent": "Son of A"
-                }
-              ]
-            },
-            {
-              "name": "Daughter of A",
-              "parent": "Level 2: A"
-            }
-          ]
-        },
-        {
-          "name": "Level 2: B",
-          "parent": "Top Level"
-        }
-      ]
-    }
-  ];
-
-
-
-  treeData = [];
-  treeData.push(rootNode);
+treeData = [];
+treeData.push(rootNode);
 
 
 
@@ -163,10 +176,10 @@ function generateTree(treeData) {
 
     // Update the nodes…
     let node = svg.selectAll("g.node")
-      .data(nodes, function (d) {return d.id; })
-      
+      .data(nodes, function (d) { return d.id; })
+
     function altclick(d) {
-      console.log("Clicked");
+      console.log(d);
       let children = d._children ? d._children : d.children;
       nodes.forEach(c => {
         // console.log(c == d)
@@ -199,7 +212,7 @@ function generateTree(treeData) {
 
     nodeEnter.append("circle")
       .attr("r", 1e-6)
-      .style("fill", function (d) { return d._children ? `hsl(214, 41, ${ 1/d.numChildren * 200})` : "#fff"; });
+      .style("fill", function (d) { return d._children ? `hsl(214, 41, ${1 / d.numChildren * 200})` : "#fff"; });
 
     nodeEnter.append("text")
       .attr("x", function (d) { return d.children || d._children ? -20 : 20; })
@@ -208,7 +221,7 @@ function generateTree(treeData) {
       .text(function (d) { return d.name; })
       .style('fill', 'darkOrange')
       .style("fill-opacity", 1e-6);
-      
+
 
     // Transition nodes to their new position.
     let nodeUpdate = node.transition()
@@ -218,8 +231,8 @@ function generateTree(treeData) {
     let luminence = 90;
 
     nodeUpdate.select("circle")
-      .attr("r", function (d) {return Math.sqrt(d.subtreeProductCount)*rScale + 6;})
-      .style("fill", function (d) { return d._children ? `hsl(214, 41, ${ 1/Math.cbrt(d.numChildren) * 110 - 35})` : "#fff"; });
+      .attr("r", function (d) { return Math.sqrt(d.subtreeProductCount) * rScale + 6; })
+      .style("fill", function (d) { return d._children ? `hsl(214, 41, ${1 / Math.cbrt(d.numChildren) * 110 - 35})` : "#fff"; });
 
     nodeUpdate.select("text")
       .style("fill-opacity", 1);
@@ -267,7 +280,7 @@ function generateTree(treeData) {
       d.x0 = d.x;
       d.y0 = d.y;
     });
-;
+    ;
     // Buttons
     function collapse() {
 
@@ -291,7 +304,7 @@ function generateTree(treeData) {
       });
       console.log("expanded")
     }
-    d3.select('#expand').on('click',expand);
+    d3.select('#expand').on('click', expand);
 
   }
 
